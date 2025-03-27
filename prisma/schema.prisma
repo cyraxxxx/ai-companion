@@ -1,0 +1,1226 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  //ajout
+  //enlevé le 16 décembre 2024???
+  //à tester
+  //previewFeatures = ["fullTextIndex"]
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+  //
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+model Admin {
+  id       String @id
+  username String @unique
+}
+
+model Student {
+  id          String       @id
+  username    String       @unique
+  name        String
+  surname     String
+  email       String?      @unique
+  phone       String?      @unique
+  address     String
+  img         String?
+  bloodType   String
+  sex         UserSex
+  createdAt   DateTime     @default(now())
+  parentId    String
+  parent      Parent       @relation(fields: [parentId], references: [id])
+  classId     Int
+  class       Class        @relation(fields: [classId], references: [id])
+  gradeId     Int
+  grade       Grade        @relation(fields: [gradeId], references: [id])
+  attendances Attendance[]
+  results     Result[]
+  birthday    DateTime
+  @@index([parentId])
+  @@index([classId])
+  @@index([gradeId])
+}
+
+model Teacher {
+  id        String    @id
+  username  String    @unique
+  name      String
+  surname   String
+  email     String?   @unique
+  phone     String?   @unique
+  address   String
+  img       String?
+  bloodType String
+  sex       UserSex
+  createdAt DateTime  @default(now())
+  subjects  Subject[]
+  lessons   Lesson[]
+  classes   Class[]
+  birthday  DateTime
+}
+
+model Parent {
+  id        String    @id
+  username  String    @unique
+  name      String
+  surname   String
+  email     String?   @unique
+  phone     String    @unique
+  address   String
+  createdAt DateTime  @default(now())
+  students  Student[]
+  
+}
+
+model Grade {
+  id    Int @id @default(autoincrement())
+  level Int @unique
+
+  students Student[]
+  classess Class[]
+}
+
+model Class {
+  id       Int    @id @default(autoincrement())
+  name     String @unique
+  capacity Int
+
+  supervisorId  String?
+  supervisor    Teacher?       @relation(fields: [supervisorId], references: [id])
+  lessons       Lesson[]
+  students      Student[]
+  gradeId       Int
+  grade         Grade          @relation(fields: [gradeId], references: [id])
+  events        Event[]
+  announcements Announcement[]
+  @@index([supervisorId])
+  @@index([gradeId])
+  
+}
+
+model Subject {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  teachers Teacher[]
+  lessons  Lesson[]
+}
+
+model Lesson {
+  id        Int      @id @default(autoincrement())
+  name      String
+  day       Day
+  startTime DateTime
+  endTime   DateTime
+
+  subjectId   Int
+  subject     Subject      @relation(fields: [subjectId], references: [id])
+  classId     Int
+  class       Class        @relation(fields: [classId], references: [id])
+  teacherId   String
+  teacher     Teacher      @relation(fields: [teacherId], references: [id])
+  exams       Exam[]
+  assignments Assignment[]
+  attendances Attendance[]
+  @@index([subjectId])
+  @@index([classId])
+  @@index([teacherId])
+}
+
+model Exam {
+  id        Int      @id @default(autoincrement())
+  title     String
+  startTime DateTime
+  endTime   DateTime
+
+  lessonId Int?
+  lesson   Lesson?   @relation(fields: [lessonId], references: [id])
+  results  Result[]
+  @@index([lessonId])
+
+}
+
+model Assignment {
+  id        Int      @id @default(autoincrement())
+  title     String
+  startDate DateTime
+  dueDate   DateTime
+
+  lessonId Int
+  lesson   Lesson   @relation(fields: [lessonId], references: [id])
+  results  Result[]
+    @@index([lessonId])
+
+}
+
+model Result {
+  id    Int @id @default(autoincrement())
+  score Int
+
+  examId       Int?
+  exam         Exam?       @relation(fields: [examId], references: [id])
+  assignmentId Int?
+  assignment   Assignment? @relation(fields: [assignmentId], references: [id])
+  studentId    String
+  student      Student     @relation(fields: [studentId], references: [id])
+    @@index([examId])
+  @@index([assignmentId])
+  @@index([studentId])
+
+}
+
+model Attendance {
+  id      Int      @id @default(autoincrement())
+  date    DateTime
+  present Boolean
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+  lessonId  Int
+  lesson    Lesson  @relation(fields: [lessonId], references: [id])
+  @@index([studentId])
+  @@index([lessonId])
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  startTime   DateTime
+  endTime     DateTime
+
+  classId Int?
+  class   Class? @relation(fields: [classId], references: [id])
+   @@index([classId])
+}
+
+model Announcement {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  date        DateTime
+
+  classId Int?
+  class   Class? @relation(fields: [classId], references: [id])
+  @@index([classId])
+}
+
+enum UserSex {
+  MALE
+  FEMALE
+}
+
+enum Day {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+}
+
+
+
+
+
+
+
+
+
+
+
+
+model UserProfile {
+  id               String    @id @default(cuid())
+  userId String
+  clerkId          String?   @unique
+  
+  email            String?    @unique
+    phone            String?    @unique
+  title String
+  firstName        String?
+  lastName         String?
+
+  //
+  subAccountId  String
+  liveProducts  String? @default("[]")
+
+  subAccount  SubAccount   @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+//
+  
+  userType         String    @default("free") // free, standard, pro ,admin
+
+  categoryId String?
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  
+  description String? @db.Text
+
+  services String? @db.Text
+
+  offers String? @db.Text
+
+  schedule String? @db.Text
+
+  startDateTime    DateTime       @default(now())
+  endDateTime    DateTime      @default(now())
+
+  location         String? @db.Text
+
+  imageUrl String? @db.Text
+
+  isPublished Boolean @default(false)
+  isFree Boolean @default(false)
+  url String? @db.Text
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  @@index([categoryId])
+  @@fulltext([title])
+  @@index([subAccountId])
+}
+
+
+
+// model User {
+//   id           String         @id @default(uuid())
+//   //ajout pour event
+// //userId String @unique //à remettre???
+// //username String @unique
+// //firstName String @default("")
+// //lastName String @default("")
+// //photo String @default("")
+//   //
+//   name         String
+//   avatarUrl    String         @db.Text
+//   email        String         @unique
+//   createdAt    DateTime       @default(now())
+//   updatedAt    DateTime       @updatedAt
+//   role         Role           @default(SUBACCOUNT_USER)
+//   agencyId     String?
+//   Agency       Agency?        @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+//   Permissions  Permissions[]
+//   Ticket       Ticket[]
+//   Notification Notification[]
+//   //events Event[] 
+
+//   @@index([agencyId])
+// }
+
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+enum Role {
+  AGENCY_OWNER
+  AGENCY_ADMIN
+  SUBACCOUNT_USER
+  SUBACCOUNT_GUEST
+}
+
+enum TriggerTypes {
+  CONTACT_FORM
+}
+
+enum ActionType {
+  CREATE_CONTACT
+}
+
+enum InvitationStatus {
+  ACCEPTED
+  REVOKED
+  PENDING
+}
+
+enum Plan {
+  // Product 1: Base Plan
+  price_1QAjI602Z5HkjcGqgZmkaHwG
+  // Product 2: Unlimited Plan
+  price_1QAjI602Z5HkjcGqgFdexteB
+}
+
+
+enum Icon {
+  settings
+  chart
+  calendar
+  check
+  chip
+  //compass
+  database
+  flag
+  gear
+  home
+  info
+  link
+  lock
+  messages
+  notification
+  payment
+  power
+  receipt
+  shield
+  star
+  tune
+  videorecorder
+  wallet
+  warning
+  headphone
+  send
+  pipelines
+  person
+  category
+  contact
+  clipboardIcon
+  BarChart
+  Compass
+  CreditCard
+  Users
+  Rocket
+  HandCoins
+  ShieldHalf
+  Columns3
+
+  Cable
+  Zap
+  UserRoundCog
+}
+
+model User {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name      String
+  avatarUrl String  @db.Text
+  email     String  @unique
+  role      Role    @default(SUBACCOUNT_USER)
+  agencyId  String?
+
+  agency       Agency?        @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  permissions  Permissions[]
+  tickets      Ticket[]
+  notification Notification[]
+
+  @@index([agencyId])
+}
+
+model Agency {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  connectAccountId String? @default("")
+  customerId       String  @default("")
+  name             String
+  agencyLogo       String  @db.Text
+  companyEmail     String  @db.Text
+  companyPhone     String
+  whiteLabel       Boolean @default(true)
+  address          String
+  city             String
+  zipCode          String
+  state            String
+  country          String
+  goal             Int     @default(5)
+
+  users          User[]
+  subAccounts    SubAccount[]
+  sidebarOptions AgencySidebarOption[]
+  invitations    Invitation[]
+  notifications  Notification[]
+  subscriptions  Subscription?
+  addOns         AddOns[]
+}
+
+model SubAccount {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  connectAccountId String? @default("")
+  name             String
+  subAccountLogo   String  @db.Text
+  companyEmail     String  @db.Text
+  companyPhone     String
+  goal             Int     @default(5)
+  address          String
+  city             String
+  zipCode          String
+  state            String
+  country          String
+  agencyId         String
+
+  agency         Agency                    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  sidebarOptions SubAccountSidebarOption[]
+  permissions    Permissions[]
+  funnels        Funnel[]
+  //
+  courses Course[]
+  events UserEvent[]
+  profiles UserProfile[]
+  //
+  media          Media[]
+  contacts       Contact[]
+  triggers       Trigger[]
+  automations    Automation[]
+  pipelines      Pipeline[]
+  tags           Tag[]
+  notifications  Notification[]
+
+  @@index([agencyId])
+}
+
+model Permissions {
+  id String @id @default(uuid())
+
+  email        String
+  subAccountId String
+  access       Boolean
+
+  user       User       @relation(fields: [email], references: [email], onDelete: Cascade)
+  subAccount SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+
+  @@index([subAccountId])
+  @@index([email])
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name         String
+  color        String
+  subAccountId String
+
+  subAccount SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  tickets    Ticket[]
+
+  @@index([subAccountId])
+}
+
+model Pipeline {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name         String
+  subAccountId String
+
+  lanes      Lane[]
+  subAccount SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+
+  @@index([subAccountId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notification String
+  agencyId     String
+  subAccountId String?
+  userId       String
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency     Agency      @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  subAccount SubAccount? @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId])
+  @@index([subAccountId])
+  @@index([userId])
+}
+
+model Lane {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name       String
+  pipelineId String
+  order      Int    @default(0)
+  color      String
+
+  pipeline Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  tickets  Ticket[]
+
+  @@index([pipelineId])
+}
+
+model Ticket {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name           String
+  laneId         String
+  order          Int      @default(0)
+  //value          Float?
+  value          Decimal?
+  description    String?
+  customerId     String?
+  assignedUserId String?
+
+  lane     Lane     @relation(fields: [laneId], references: [id], onDelete: Cascade)
+  customer Contact? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  tags     Tag[]
+  assigned User?    @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
+
+  @@index([laneId])
+  @@index([customerId])
+  @@index([assignedUserId])
+}
+
+model Trigger {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name         String
+  subAccountId String
+
+  type        TriggerTypes
+  subaccount  SubAccount   @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  automations Automation[]
+
+  @@index([subAccountId])
+}
+
+model Automation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name         String
+  triggerId    String?
+  published    Boolean @default(false)
+  subAccountId String
+
+  trigger             Trigger?             @relation(fields: [triggerId], references: [id], onDelete: Cascade)
+  subaccount          SubAccount           @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  actions             Action[]
+  automationInstances AutomationInstance[]
+
+  @@index([triggerId])
+  @@index([subAccountId])
+}
+
+model AutomationInstance {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  automationId String
+  active       Boolean @default(false)
+
+  automation Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@index([automationId])
+}
+
+model Action {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name         String
+  order        Int
+  automationId String
+  laneId       String @default("0")
+
+  automation Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  type       ActionType
+
+  @@index([automationId])
+}
+
+model Contact {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name         String
+  email        String
+  subAccountId String
+
+  subaccount SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  tickets    Ticket[]
+
+  @@index([subAccountId])
+}
+
+model Media {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  type         String?
+  name         String
+  link         String  @unique
+  subAccountId String
+
+  subAccount SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+
+  @@index([subAccountId])
+}
+
+model Funnel {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name          String
+  description   String?
+  published     Boolean @default(false)
+  subDomainName String? @unique
+  favicon       String? @db.Text
+  subAccountId  String
+  liveProducts  String? @default("[]")
+
+  subAccount  SubAccount   @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  funnelPages FunnelPage[]
+  className   ClassName[]
+
+  @@index([subAccountId])
+}
+
+model ClassName {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name       String
+  color      String
+  funnelId   String
+  customData String? @db.LongText
+
+  funnel Funnel @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+
+  @@index([funnelId])
+}
+
+model FunnelPage {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name         String
+  pathName     String  @default("")
+  visits       Int     @default(0)
+  content      String? @db.LongText
+  order        Int
+  previewImage String? @db.Text
+  funnelId     String
+
+  funnel Funnel @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+
+  @@index([funnelId])
+}
+
+model AgencySidebarOption {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name     String @default("Menu")
+  link     String @default("#")
+  icon     Icon   @default(info)
+  agencyId String
+
+  agency Agency? @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId])
+}
+
+model SubAccountSidebarOption {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name         String  @default("Menu")
+  link         String  @default("#")
+  subAccountId String?
+
+  icon       Icon        @default(info)
+  subAccount SubAccount? @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+
+  @@index([subAccountId])
+}
+
+model Invitation {
+  id String @id @default(uuid())
+
+  email    String @unique
+  agencyId String
+
+  agency Agency           @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  status InvitationStatus @default(PENDING)
+  role   Role             @default(SUBACCOUNT_USER)
+
+  @@index([agencyId])
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  plan   Plan?
+  price  String?
+  active Boolean @default(false)
+
+  priceId              String
+  customerId           String
+  currentPeriodEndDate DateTime
+  subscritiptionId     String   @unique
+
+  agencyId String? @unique
+  agency   Agency? @relation(fields: [agencyId], references: [id])
+
+  @@index([customerId])
+}
+
+model AddOns {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name     String
+  active   Boolean @default(false)
+  priceId  String  @unique
+  agencyId String?
+
+  agency Agency? @relation(fields: [agencyId], references: [id])
+
+  @@index([agencyId])
+}
+
+
+model UserEvent {
+  id           String   @id @default(uuid())
+  userId String
+  title         String @db.Text
+  description         String? @db.Text
+  about         String? @db.Text
+  location         String? @db.Text
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  imageUrl String? @db.Text
+  startDateTime    DateTime       @default(now())
+  endDateTime    DateTime      @default(now())
+//price String? 
+price Float?
+isPublished Boolean @default(false)
+//
+  subAccountId  String
+  liveProducts  String? @default("[]")
+
+  subAccount  SubAccount   @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+//
+///
+  name         String?
+  pathName     String  @default("")
+  visits       Int     @default(0)
+  content      String? @db.LongText
+  order        Int?
+  previewImage String? @db.Text
+  ///
+  isFree Boolean @default(false)
+  url String? @db.Text
+  categoryId String?
+  category Category? @relation(fields: [categoryId], references: [id])
+purchases PurchaseEvent[]
+  //organizerId String?
+  //organizer User? @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+  @@fulltext([title])
+  @@index([subAccountId])
+}
+model PurchaseEvent {
+  id String @id @default(uuid())
+  userId String
+
+  userEventId String
+  userEvent UserEvent @relation(fields: [userEventId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+
+  @@unique([userId, userEventId])
+  @@index([userEventId])
+}
+
+
+
+
+model Companion {
+  id           String @id @default(uuid())
+  userId       String
+  userName     String
+  src          String
+  name         String @db.Text
+  
+  description  String
+  //characterDescription Json
+  instructions String @db.Text
+  seed         String @db.Text
+isPublished Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId String?
+
+  messages Message[] 
+
+  @@index([categoryId])
+  //@@fulltext([name])
+}
+
+enum CompanionRole {
+  user
+  system
+}
+
+model Message {
+  id String @id @default(uuid())
+  role CompanionRole
+  content String @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companionId String
+  userId String
+
+  companion Companion @relation(fields: [companionId], references: [id], onDelete: Cascade)
+
+  @@index([companionId])
+}
+
+model UserSettings {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  aiRequestsCount Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+//besoin???
+model UserApiLimit {
+  id     String @id @default(uuid())
+  userId String @unique
+  count  Int    @default(0)
+}
+///
+
+
+
+
+//lms-le-dojo le dojo db
+// datasource db {
+//   provider     = "mysql"
+//   url          = env("DATABASE_URL")
+//   relationMode = "prisma"
+// }
+
+// generator client {
+//   provider = "prisma-client-js"
+//   previewFeatures = ["fullTextSearch", "fullTextIndex"]
+// }
+
+model Course {
+  id String @id @default(uuid())
+  userId String
+  username String?
+  title String @db.Text
+  description String? @db.Text
+  imageUrl String? @db.Text
+  price Float?
+  isPublished Boolean @default(false)
+//
+  isSubscription Boolean @default(false)
+//
+//
+  subAccountId  String
+  liveProducts  String? @default("[]")
+
+  subAccount  SubAccount   @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+//
+  categoryId String?
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  chapters Chapter[]
+  attachments Attachment[]
+  purchases Purchase[]
+  //subscriptions Subscription[]
+
+  subscriptions CourseSubscription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@fulltext([title])
+  @@index([subAccountId])
+}
+
+model Category {
+  id String @id @default(uuid())
+  name String @unique
+  courses Course[]
+  // ajout pour events
+  events UserEvent[]
+
+  UserProfile UserProfile[]
+  Companion Companion[]
+}
+
+model Attachment {
+  id String @id @default(uuid())
+  name String
+  url String @db.Text
+
+  courseId String
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+}
+
+model Chapter {
+  id String @id @default(uuid())
+  title String
+  description String? @db.Text
+  videoUrl String? @db.Text
+  videoUrlLink String? @db.Text
+  position Int
+  isPublished Boolean @default(false)
+  isFree Boolean @default(false)
+
+  muxData MuxData?
+//
+  attachments ChapterAttachment[]
+//
+  courseId String
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  userProgress UserProgress[]
+  ///
+  name         String
+  pathName     String  @default("")
+  visits       Int     @default(0)
+  content      String? @db.LongText
+  order        Int
+  previewImage String? @db.Text
+  ///
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+}
+
+//add files to chapters
+model ChapterAttachment {
+  id String @id @default(uuid())
+  name String
+  url String @db.Text
+
+  //userId String
+
+  //chapterId String //@unique
+  //chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+courseId String
+
+  chapterId String? //@unique
+  chapter Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chapterId])
+  //@@unique([userId, chapterId])
+}
+//
+
+model MuxData {
+  id String @id @default(uuid())
+  assetId String
+  playbackId String?
+
+  chapterId String @unique
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+}
+
+model UserProgress {
+  id String @id @default(uuid())
+  userId String
+
+  chapterId String
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  isCompleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chapterId])
+  @@unique([userId, chapterId])
+}
+
+model Purchase {
+  id String @id @default(uuid())
+  userId String
+
+  courseId String
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+}
+
+////////////////////////////////////
+enum ACTION {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+enum ENTITY_TYPE {
+  BOARD
+  LIST
+  CARD
+  //
+  COURSE
+  //
+}
+
+model AuditLog {
+  id          String  @id @default(uuid())
+  orgId       String
+//
+  courseId String
+// 
+
+  action      ACTION
+  entityId    String
+  entityType  ENTITY_TYPE
+  entityTitle String
+  userId      String
+  userImage   String @db.Text
+  userName    String @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+
+
+ model SubscriptionCourse {
+   id String @id @default(uuid())
+   userId String
+
+   title String @db.Text
+   description String? @db.Text
+
+   price Float?
+
+   //subscriptions UserSubscription[]
+
+ isActive Boolean @default(false)
+
+   createdAt DateTime @default(now())
+   updatedAt DateTime @updatedAt()
+
+   @@fulltext([title])
+ }
+/////////////////////////////////////////
+
+
+model StripeCustomer {
+  id String @id @default(uuid())
+  userId String @unique
+  stripeCustomerId String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////
+model UserSubscription {
+  id                        String    @id @default(cuid())
+  userId                    String    @unique
+
+  //subscriptionId String
+  //subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  //courseId String
+  //course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  stripeCustomerId          String?   @unique @map(name: "stripe_customer_id")
+  stripeSubscriptionId      String?   @unique @map(name: "stripe_subscription_id")
+  stripePriceId             String?   @map(name: "stripe_price_id")
+  stripeCurrentPeriodEnd    DateTime? @map(name: "stripe_current_period_end")
+
+  //@@unique([userId, subscriptionId])
+  //@@index([subscriptionId])
+}
+
+/////
+
+//////
+model CourseSubscription {
+  id                        String    @id @default(cuid())
+  userId                    String    @unique
+
+  courseId String
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  stripeCustomerId          String?   @unique @map(name: "stripe_customer_id")
+  stripeSubscriptionId      String?   @unique @map(name: "stripe_subscription_id")
+  stripePriceId             String?   @map(name: "stripe_price_id")
+  stripeCurrentPeriodEnd    DateTime? @map(name: "stripe_current_period_end")
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+}
+/////
+
