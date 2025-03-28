@@ -72,6 +72,7 @@ const formSchema = z.object({
   .refine((val) => val !== null && val.length >= 1, {
     message: "Category is required",
   }),
+  isPublished: z.boolean(), // J'ai ajouté cette ligne pour le champ isPublished
 });
 
 interface CompanionFormProps {
@@ -95,6 +96,7 @@ export const CompanionForm = ({
       seed: "",
       src: "",
       categoryId: undefined,
+      isPublished: true, // J'ai ajouté cette ligne pour le champ isPublished
     },
   });
 
