@@ -5,12 +5,15 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { useProModal } from "@/hooks/use-pro-modal";
+import {useTranslations} from 'next-intl';
+
 
 interface SidebarProps {
   isPro: boolean;
 }
 
 export const Sidebar = ({ isPro }: SidebarProps) => {
+  const t = useTranslations('Sidebar');
   const proModal = useProModal();
   const router = useRouter();
   const pathname = usePathname();
@@ -27,19 +30,19 @@ export const Sidebar = ({ isPro }: SidebarProps) => {
     {
       icon: Home,
       href: "/",
-      label: "Home",
+      label: t('home'),
       pro: false,
     },
     {
       icon: Plus,
       href: "/companion/new",
-      label: "Create",
+      label: t('create'),
       pro: true,
     },
     {
       icon: Settings,
       href: "/settings",
-      label: "Settings",
+      label: t('settings'),
       pro: false,
     },
   ];

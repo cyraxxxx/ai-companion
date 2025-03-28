@@ -1,0 +1,15 @@
+{
+    "HomePage": {
+      "howItWorks": "How it works",
+      "howItWorks1": "Click on a virtual assistant to ask a question about golf.",
+      "howItWorks2": "Receive instant answers based on the official rules."
+    },
+    "Navbar": {
+      "upgrade": "Upgrade"
+    },
+    "Sidebar": {
+      "home": "Home",
+      "create": "Create",
+      "settings": "Settings"
+    }
+  }

@@ -4,6 +4,8 @@ import { SearchInput } from "@/components/search-input";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs";
+import {useTranslations} from 'next-intl';
+
 
 
 interface PageProps {
@@ -12,6 +14,22 @@ interface PageProps {
     name: string;
   };
 }
+
+const HomePageTitle = () => {
+  const t = useTranslations('HomePage');
+  return <Card className="rounded-xl border-0 bg-primary/10">
+      <CardHeader className="text-xl font-semibold text-primary/60">
+      {t('howItWorks')}
+      </CardHeader>
+      <CardContent className="text-sm">
+      <ul className="list-inside list-decimal">
+        <li>{t('howItWorks1')}</li>
+        <li>{t('howItWorks2')}</li>
+      </ul>
+      </CardContent>
+    </Card>;
+};
+
 
 const Page = async ({ searchParams }: PageProps) => {
   const { userId } = auth();
@@ -59,25 +77,14 @@ const Page = async ({ searchParams }: PageProps) => {
 
   const categories = await prismadb.category.findMany();
 
+
+
   return (
 
     <div className="h-full space-y-2 p-4">
       {/* <SearchInput /> */}
       {/* <Categories data={categories} /> */}
-
-
-
-      <Card className="rounded-xl border-0 bg-primary/10">
-      <CardHeader className="text-xl font-semibold text-primary/60">
-        Comment utiliser l'application
-      </CardHeader>
-      <CardContent className="text-sm">
-      <ul className="list-inside list-decimal">
-        <li>Cliquez sur un assistant virtuel pour poser votre question au sujet du golf.</li>
-        <li>Recevez des réponses instantanées basées sur les règles officielles.</li>
-      </ul>
-      </CardContent>
-    </Card>
+      <HomePageTitle />
 
       <Companions data={data} />
     </div>

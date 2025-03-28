@@ -1,3 +1,8 @@
+import {NextIntlClientProvider, hasLocale} from 'next-intl';
+
+
+import {getLocale} from 'next-intl/server';
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -16,16 +21,19 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {
+// Ensure that the incoming `locale` is valid
+const locale = await getLocale;
 
 
   return (
     
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="locale" suppressHydrationWarning>
+      <NextIntlClientProvider>
         <body className={cn("bg-secondary", inter.className)}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <ProModal />
@@ -33,6 +41,7 @@ export default async function RootLayout({
             <Toaster />
           </ThemeProvider>
         </body>
+        </NextIntlClientProvider>
       </html>
     </ClerkProvider>
   );

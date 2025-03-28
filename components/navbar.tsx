@@ -11,6 +11,7 @@ import { MobileSidebar } from "@/components/mobile-sidebar";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { useProModal } from "@/hooks/use-pro-modal";
+import {useTranslations} from 'next-intl';
 
 const font = Poppins({ weight: "600", subsets: ["latin"] });
 interface NavbarProps {
@@ -18,6 +19,7 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ isPro }: NavbarProps) => {
+  const t = useTranslations('Navbar');
   const proModal = useProModal();
 
 
@@ -40,7 +42,7 @@ export const Navbar = ({ isPro }: NavbarProps) => {
       <div className="flex items-center gap-x-3">
         {!isPro && (
           <Button onClick={proModal.onOpen} size="sm" variant="premium">
-            Upgrade
+            {t('upgrade')}
             <Sparkles className="ml-2 h-4 w-4 fill-white text-white" />
           </Button>
         )}

@@ -1,0 +1,16 @@
+{
+    "HomePage": {
+      "howItWorks": "Comment utiliser l'application",
+      "howItWorks1": "Cliquez sur un assistant virtuel pour poser votre question au sujet du golf.",
+      "howItWorks2": "Recevez des réponses instantanées basées sur les règles officielles."
+
+    },
+    "Navbar": {
+      "upgrade": "Mettre à niveau"
+    },
+    "Sidebar": {
+      "home": "Accueil",
+      "create": "Créer",
+      "settings": "Paramètres"
+    }
+  }
